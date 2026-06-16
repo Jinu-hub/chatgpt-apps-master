@@ -11,13 +11,16 @@ import {
   Expand,
 } from "@openai/apps-sdk-ui/components/Icon";
 import type { Workout } from "../../types";
+import type { App } from "@modelcontextprotocol/ext-apps";
 
 export function WorkoutSession({
   workout,
   onClose,
+  app,
 }: {
   workout: Workout;
   onClose: () => void;
+  app: App | null;
 }) {
   const totalRounds = Math.floor(
     (workout.durationMinutes * 60) / workout.intervalSeconds,
@@ -28,24 +31,44 @@ export function WorkoutSession({
   const [timeRemaining, setTimeRemaining] = useState(workout.intervalSeconds);
   const [isRunning, setIsRunning] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
-  const [caloriesBurned, _setCaloriesBurned] = useState<number | null>(null);
+  const [caloriesBurned, setCaloriesBurned] = useState<number | null>(null);
 
   const intervalRef = useRef<number | null>(null);
   const currentExercise = workout.exercises[currentExerciseIndex];
 
   // Finish workout: stop timer, update context, estimate calories
-  async function finishWorkout(_roundsDone: number) {
+  async function finishWorkout(roundsDone: number) {
     setTimeRemaining(0);
     setIsRunning(false);
     setIsComplete(true);
 
-    // TODO: Tell AI what happened
+    if (!app) return;
 
-    // TODO: Get calories burned
+    await app.updateModelContext({
+      content: [
+        {
+          type: "text",
+          text: `The user has completed ${roundsDone} rounds of the workout ${JSON.stringify(workout)}`,
+        },
+      ],
+    });
+
+    const result = await app.callServerTool({
+      name: "complete-workout",
+      arguments: {
+        workoutId: workout.id,
+        roundsCompleted: roundsDone,
+      },
+    });
+    if (result.isError) return;
+    if (result.structuredContent) {
+      const calories = result.structuredContent.calories;
+      setCaloriesBurned(calories as number);
+    }
   }
 
   // Advance to next round or finish workout
-  function nextRound() {
+  async function nextRound() {
     if (currentRound + 1 > totalRounds) {
       finishWorkout(totalRounds);
       return;
@@ -53,6 +76,17 @@ export function WorkoutSession({
     setCurrentRound((r) => r + 1);
     setCurrentExerciseIndex((i) => (i + 1) % workout.exercises.length);
     setTimeRemaining(workout.intervalSeconds);
+
+    if (!app) return;
+
+    await app.updateModelContext({
+      content: [
+        {
+          type: "text",
+          text: `The user has completed ${currentRound} round of ${totalRounds} of the workout ${JSON.stringify(workout)}`,
+        },
+      ],
+    });
   }
 
   // Timer tick — runs every second
