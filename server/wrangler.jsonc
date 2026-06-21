@@ -19,9 +19,16 @@
 		{
 			"binding": "DB",
 			"database_name": "ecommerce_database",
-			"database_id": "REPLACE_ME",
+			"database_id": "7a665543-db99-4248-bd4b-baf4b657982a",
 			"remote": true,
 			"migrations_dir": "drizzle",
+		},
+	],
+	"kv_namespaces": [
+		{
+			"binding": "OAUTH_KV",
+			"id": "9fc212a09e6a41d2a46a7791b098cab1",
+			"remote": true,
 		},
 	],
 }
