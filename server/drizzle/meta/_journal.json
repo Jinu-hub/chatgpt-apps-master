@@ -8,6 +8,13 @@
       "when": 1780018886868,
       "tag": "0000_tranquil_gorgon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1782293997135,
+      "tag": "0001_left_baron_strucker",
+      "breakpoints": true
     }
   ]
 }
