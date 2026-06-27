@@ -60,6 +60,13 @@ export default function App() {
     capabilities: {},
     onAppCreated: (app) => {
       app.ontoolresult = handleToolResult;
+      /*
+      if ((window as any).openai?.toolOutput) {
+        handleToolResult({
+          structuredContent: (window as any).openai.toolOutput,
+        });
+      }
+      */
     },
   });
 
@@ -72,6 +79,20 @@ export default function App() {
     if (ctx?.styles?.variables) {
       applyHostStyleVariables(ctx.styles.variables);
     }
+  }, [app]);
+
+  useEffect(() => {
+    if (!app) return;
+    const fetchCart = async () => {
+      const result = await app.callServerTool({
+        name: "view-cart",
+        arguments: {},
+      });
+      if (!result.isError) {
+        setCart(result.structuredContent?.cartItems as CartItem[]);
+      }
+    };
+    fetchCart();
   }, [app]);
 
   if (!isConnected) {
