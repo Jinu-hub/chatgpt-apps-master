@@ -245,11 +245,20 @@ const privateHandler = {
 				},
 			},
 			async ({ productId, rating, text, imageUrl }) => {
+				let imageKey: string | undefined;
 				if (imageUrl) {
-					// ....
+					const { ok, body, headers } = await fetch(imageUrl);
+					if (ok) {
+						const result = await env.BUCKET.put(`ecommerce/${crypto.randomUUID()}`, body, {
+							httpMetadata: {
+								contentType: headers.get('content-type') || 'image/jpeg',
+							},
+						});
+						imageKey = result.key;
+					}
 				}
 
-				await upsertReview(env.DB, props.email, productId, rating, text, '');
+				await upsertReview(env.DB, props.email, productId, rating, text, imageKey);
 
 				const freshReviews = await getReviewsByProductId(env.DB, productId);
 
@@ -272,6 +281,19 @@ const privateHandler = {
 const publicHandler = {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
+
+		if (url.pathname.startsWith('/banana')) {
+			const key = url.pathname.replace('/banana/', '');
+			const object = await env.BUCKET.get(key);
+			if (!object) {
+				return new Response('image not found', { status: 404 });
+			}
+			return new Response(object.body, {
+				headers: {
+					'Content-Type': object.httpMetadata?.contentType ?? 'image/jpeg',
+				},
+			});
+		}
 
 		if (url.pathname === '/seed') {
 			await seedProducts(env.DB);

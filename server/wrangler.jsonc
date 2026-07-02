@@ -10,7 +10,9 @@
 	"observability": {
 		"enabled": true,
 	},
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"assets": {
 		"directory": "dist",
 		"binding": "ASSETS",
@@ -30,5 +32,12 @@
 			"id": "9fc212a09e6a41d2a46a7791b098cab1",
 			"remote": true,
 		},
+	],
+	"r2_buckets": [
+		{
+			"bucket_name": "ecommerce-assets",
+			"binding": "BUCKET",
+			"remote": true
+		}
 	],
 }
