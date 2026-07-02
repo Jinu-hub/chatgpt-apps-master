@@ -282,8 +282,8 @@ const publicHandler = {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
 
-		if (url.pathname.startsWith('/banana')) {
-			const key = url.pathname.replace('/banana/', '');
+		if (url.pathname.startsWith('/banana1')) {
+			const key = url.pathname.replace('/banana1/', '');
 			const object = await env.BUCKET.get(key);
 			if (!object) {
 				return new Response('image not found', { status: 404 });
